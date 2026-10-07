@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget-Constrained Project Selection System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Clean Top Bar -->
+  <header class="app-header">
+    <div class="container header-container">
+      <div class="header-main">
+        <h1 class="app-title">Budget-Constrained <span class="title-highlight">Project Selection System</span></h1>
+        <p class="app-subtitle">0/1 Knapsack &bull; Dynamic Programming</p>
+      </div>
+
+      <div class="header-team-row">
+        <div class="header-team">
+          <span class="team-label">Team Members</span>
+          <div class="team-list">
+            <div class="team-member"><span class="member-name">Sharvari Chaudhari</span> <span class="member-roll">25102B0082</span></div>
+            <div class="team-member"><span class="member-name">Karthik Akinapelly</span> <span class="member-roll">25102B0074</span></div>
+            <div class="team-member"><span class="member-name">Satyajeet Prasad</span> <span class="member-roll">25102B0067</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container main-content">
+
+    <!-- 1. USER INPUT SECTION -->
+    <section class="card input-section">
+      <div class="card-header">
+        <h2 class="card-title">1. Project &amp; Budget Input</h2>
+        <button type="button" id="btnLoadSample" class="btn btn-outline">Load Sample Data</button>
+      </div>
+
+      <!-- Controls for Budget and Project Count -->
+      <div class="config-bar">
+        <div class="form-group">
+          <label for="numProjectsInput">Number of Projects</label>
+          <div class="input-inline">
+            <input type="number" id="numProjectsInput" min="1" max="25" value="4">
+            <button type="button" id="btnUpdateRows" class="btn btn-secondary">Generate Rows</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="totalBudgetInput">Total Available Budget (INR)</label>
+          <input type="number" id="totalBudgetInput" min="1" value="50" placeholder="e.g. 50">
+        </div>
+      </div>
+
+      <!-- Projects Input Table -->
+      <div class="table-wrapper">
+        <table class="app-table">
+          <thead>
+            <tr>
+              <th style="width: 15%;">Project ID</th>
+              <th style="width: 45%;">Project Name / Title</th>
+              <th style="width: 20%;">Cost (INR)</th>
+              <th style="width: 20%;">Expected Benefit</th>
+            </tr>
+          </thead>
+          <tbody id="projectsTableBody">
+            <!-- Populated via script -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Error Message Banner -->
+      <div id="errorBanner" class="error-box" style="display: none;"></div>
+
+      <!-- Action Button -->
+      <div class="action-bar">
+        <button type="button" id="btnCalculate" class="btn btn-primary btn-large">
+          Calculate Optimal Selection
+        </button>
+      </div>
+    </section>
+
+    <!-- 2. SOLUTION & RESULTS SECTION -->
+    <section id="solutionSection" class="card results-section">
+      <div class="card-header">
+        <h2 class="card-title">2. Optimal Solution</h2>
+        <span class="status-badge">0/1 Knapsack Solution</span>
+      </div>
+
+      <!-- Key Result Metrics -->
+      <div class="metrics-grid">
+        <div class="metric-card highlight">
+          <div class="metric-label">Maximum Benefit</div>
+          <div class="metric-val" id="resMaxBenefit">230</div>
+          <div class="metric-sub">Optimal Total Utility</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Budget Used</div>
+          <div class="metric-val" id="resBudgetUsed">₹45</div>
+          <div class="metric-sub" id="resBudgetUsedSub">Total cost of selected projects</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Remaining Budget</div>
+          <div class="metric-val" id="resRemainingBudget">₹5</div>
+          <div class="metric-sub" id="resRemainingBudgetSub">Budget − Budget Used</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Projects Selected</div>
+          <div class="metric-val" id="resSelectedCount">3 / 4</div>
+          <div class="metric-sub">Complete 0/1 allocations</div>
+        </div>
+      </div>
+
+      <!-- Selected Projects Table -->
+      <div class="table-group">
+        <h3 class="table-subheading text-success">&#10003; SELECTED PROJECTS</h3>
+        <div class="table-wrapper">
+          <table class="app-table">
+            <thead>
+              <tr>
+                <th style="width: 15%;">Project ID</th>
+                <th style="width: 45%;">Project Name</th>
+                <th style="width: 20%;">Cost (INR)</th>
+                <th style="width: 20%;">Benefit</th>
+              </tr>
+            </thead>
+            <tbody id="selectedTableBody">
+              <!-- Selected items -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Rejected Projects Table -->
+      <div class="table-group">
+        <h3 class="table-subheading text-muted">&#10005; REJECTED / UNSELECTED PROJECTS</h3>
+        <div class="table-wrapper">
+          <table class="app-table">
+            <thead>
+              <tr>
+                <th style="width: 15%;">Project ID</th>
+                <th style="width: 45%;">Project Name</th>
+                <th style="width: 20%;">Cost (INR)</th>
+                <th style="width: 20%;">Benefit</th>
+              </tr>
+            </thead>
+            <tbody id="rejectedTableBody">
+              <!-- Rejected items -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Clean Footer -->
+  <footer class="app-footer">
+    <div class="container footer-inner">
+      <div>Budget-Constrained Project Selection System &bull; AOA College Mini-Project</div>
+      <div class="footer-meta">Sharvari Chaudhari (25102B0082) &bull; Karthik Akinapelly (25102B0074) &bull; Satyajeet Prasad (25102B0067)</div>
+    </div>
+  </footer>
+
+  <!-- 0/1 Knapsack In-Browser Logic -->
+  <script>
+    const SAMPLE_DATA = [
+      { id: "P1", name: "Website", cost: 10, benefit: 60 },
+      { id: "P2", name: "Mobile App", cost: 20, benefit: 100 },
+      { id: "P3", name: "AI System", cost: 30, benefit: 120 },
+      { id: "P4", name: "Security System", cost: 15, benefit: 70 }
+    ];
+    const SAMPLE_BUDGET = 50;
+
+    const numProjectsInput = document.getElementById('numProjectsInput');
+    const totalBudgetInput = document.getElementById('totalBudgetInput');
+    const btnUpdateRows = document.getElementById('btnUpdateRows');
+    const btnLoadSample = document.getElementById('btnLoadSample');
+    const btnCalculate = document.getElementById('btnCalculate');
+    const projectsTableBody = document.getElementById('projectsTableBody');
+    const errorBanner = document.getElementById('errorBanner');
+
+    const resMaxBenefit = document.getElementById('resMaxBenefit');
+    const resBudgetUsed = document.getElementById('resBudgetUsed');
+    const resBudgetUsedSub = document.getElementById('resBudgetUsedSub');
+    const resRemainingBudget = document.getElementById('resRemainingBudget');
+    const resRemainingBudgetSub = document.getElementById('resRemainingBudgetSub');
+    const resSelectedCount = document.getElementById('resSelectedCount');
+    const selectedTableBody = document.getElementById('selectedTableBody');
+    const rejectedTableBody = document.getElementById('rejectedTableBody');
+
+    function showError(msg) {
+      errorBanner.textContent = msg;
+      errorBanner.style.display = 'block';
+    }
+
+    function clearError() {
+      errorBanner.textContent = '';
+      errorBanner.style.display = 'none';
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+      });
+    }
+
+    function renderInputRows(count, dataArray) {
+      clearError();
+      projectsTableBody.innerHTML = '';
+      const n = Math.max(1, Math.min(count, 30));
+      numProjectsInput.value = n;
+
+      for (let i = 0; i < n; i++) {
+        const tr = document.createElement('tr');
+        const defaultId = dataArray && dataArray[i] ? dataArray[i].id : `P${i + 1}`;
+        const defaultName = dataArray && dataArray[i] ? dataArray[i].name : `Project ${i + 1}`;
+        const defaultCost = dataArray && dataArray[i] ? dataArray[i].cost : '';
+        const defaultBenefit = dataArray && dataArray[i] ? dataArray[i].benefit : '';
+
+        tr.innerHTML = `
+          <td><input type="text" class="cell-input proj-id" value="${escapeHtml(defaultId)}" placeholder="e.g. P${i + 1}"></td>
+          <td><input type="text" class="cell-input proj-name" value="${escapeHtml(defaultName)}" placeholder="Project Name"></td>
+          <td><input type="number" min="1" class="cell-input proj-cost" value="${defaultCost}" placeholder="Cost > 0"></td>
+          <td><input type="number" min="1" class="cell-input proj-benefit" value="${defaultBenefit}" placeholder="Benefit > 0"></td>
+        `;
+        projectsTableBody.appendChild(tr);
+      }
+    }
+
+    function loadSampleData() {
+      clearError();
+      totalBudgetInput.value = SAMPLE_BUDGET;
+      renderInputRows(SAMPLE_DATA.length, SAMPLE_DATA);
+      calculateKnapsack();
+    }
+
+    function calculateKnapsack() {
+      clearError();
+
+      const rawBudget = totalBudgetInput.value.trim();
+      if (!rawBudget) {
+        showError('Please enter a Total Available Budget.');
+        return;
+      }
+      const budget = parseInt(rawBudget, 10);
+      if (isNaN(budget) || budget <= 0) {
+        showError('Budget must be a positive integer greater than 0.');
+        return;
+      }
+
+      const rows = projectsTableBody.querySelectorAll('tr');
+      if (rows.length === 0) {
+        showError('At least one project is required.');
+        return;
+      }
+
+      const projects = [];
+      const seenIds = new Set();
+
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const id = row.querySelector('.proj-id').value.trim();
+        const name = row.querySelector('.proj-name').value.trim();
+        const costStr = row.querySelector('.proj-cost').value.trim();
+        const benefitStr = row.querySelector('.proj-benefit').value.trim();
+
+        if (!id) {
+          showError(`Row ${i + 1}: Project ID cannot be empty.`);
+          return;
+        }
+        if (seenIds.has(id.toLowerCase())) {
+          showError(`Row ${i + 1}: Duplicate Project ID "${id}". Each project ID must be unique.`);
+          return;
+        }
+        seenIds.add(id.toLowerCase());
+
+        if (!name) {
+          showError(`Row ${i + 1}: Project Name cannot be empty.`);
+          return;
+        }
+
+        if (!costStr) {
+          showError(`Row ${i + 1}: Project Cost cannot be empty.`);
+          return;
+        }
+        const cost = parseInt(costStr, 10);
+        if (isNaN(cost) || cost <= 0) {
+          showError(`Row ${i + 1}: Cost must be a positive integer greater than 0.`);
+          return;
+        }
+
+        if (!benefitStr) {
+          showError(`Row ${i + 1}: Expected Benefit cannot be empty.`);
+          return;
+        }
+        const benefit = parseInt(benefitStr, 10);
+        if (isNaN(benefit) || benefit <= 0) {
+          showError(`Row ${i + 1}: Benefit must be a positive integer greater than 0.`);
+          return;
+        }
+
+        projects.push({ id, name, cost, benefit });
+      }
+
+      const n = projects.length;
+
+      // 0/1 Knapsack DP Matrix
+      const DP = [];
+      for (let i = 0; i <= n; i++) {
+        DP[i] = new Int32Array(budget + 1);
+      }
+
+      for (let i = 1; i <= n; i++) {
+        const pCost = projects[i - 1].cost;
+        const pBenefit = projects[i - 1].benefit;
+        for (let w = 0; w <= budget; w++) {
+          if (pCost <= w) {
+            DP[i][w] = Math.max(
+              DP[i - 1][w],
+              pBenefit + DP[i - 1][w - pCost]
+            );
+          } else {
+            DP[i][w] = DP[i - 1][w];
+          }
+        }
+      }
+
+      const maxBenefit = DP[n][budget];
+
+      // Backtracking
+      let w = budget;
+      const selected = [];
+      const rejected = [];
+      let totalBudgetUsed = 0;
+
+      for (let i = n; i > 0; i--) {
+        if (DP[i][w] !== DP[i - 1][w]) {
+          selected.push(projects[i - 1]);
+          totalBudgetUsed += projects[i - 1].cost;
+          w -= projects[i - 1].cost;
+        } else {
+          rejected.push(projects[i - 1]);
+        }
+      }
+
+      selected.reverse();
+      rejected.reverse();
+
+      const remainingBudget = budget - totalBudgetUsed;
+
+      // Render Metrics
+      resMaxBenefit.textContent = maxBenefit;
+      resBudgetUsed.textContent = `₹${totalBudgetUsed}`;
+      resBudgetUsedSub.textContent = selected.map(p => `₹${p.cost}`).join(' + ') || '₹0 used';
+      resRemainingBudget.textContent = `₹${remainingBudget}`;
+      resRemainingBudgetSub.textContent = `₹${budget} − ₹${totalBudgetUsed}`;
+      resSelectedCount.textContent = `${selected.length} / ${n}`;
+
+      // Render Selected Projects
+      selectedTableBody.innerHTML = '';
+      if (selected.length === 0) {
+        selectedTableBody.innerHTML = `<tr><td colspan="4" class="empty-cell">No projects could be selected within the budget of ₹${budget}.</td></tr>`;
+      } else {
+        selected.forEach(p => {
+          const tr = document.createElement('tr');
+          tr.className = 'row-selected';
+          tr.innerHTML = `
+            <td><strong>${escapeHtml(p.id)}</strong></td>
+            <td>${escapeHtml(p.name)}</td>
+            <td>₹${p.cost}</td>
+            <td>${p.benefit}</td>
+          `;
+          selectedTableBody.appendChild(tr);
+        });
+      }
+
+      // Render Rejected Projects
+      rejectedTableBody.innerHTML = '';
+      if (rejected.length === 0) {
+        rejectedTableBody.innerHTML = `<tr><td colspan="4" class="empty-cell">All candidate projects were successfully selected!</td></tr>`;
+      } else {
+        rejected.forEach(p => {
+          const tr = document.createElement('tr');
+          tr.className = 'row-rejected';
+          tr.innerHTML = `
+            <td><strong>${escapeHtml(p.id)}</strong></td>
+            <td>${escapeHtml(p.name)}</td>
+            <td>₹${p.cost}</td>
+            <td>${p.benefit}</td>
+          `;
+          rejectedTableBody.appendChild(tr);
+        });
+      }
+
+      // Scroll to solution
+      document.getElementById('solutionSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    btnUpdateRows.addEventListener('click', () => {
+      const count = parseInt(numProjectsInput.value, 10) || 4;
+      renderInputRows(count, null);
+    });
+
+    btnLoadSample.addEventListener('click', loadSampleData);
+    btnCalculate.addEventListener('click', calculateKnapsack);
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSampleData();
+    });
+  </script>
+</body>
+</html>
