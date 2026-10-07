@@ -70,7 +70,7 @@ The web interface runs completely in the browser without any backend, database, 
   ```bash
   python3 -m http.server 5500
   ```
-- Visit: [http://localhost:5500](http://localhost:5500)
+- Visit: [http://localhost:5500](https://budget-constrainer.netlify.app/)
 
 **Web Features:**
 - **Dynamic Rows:** Adjust the number of projects and click "Generate Rows".
